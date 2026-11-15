@@ -3,19 +3,25 @@ import json
 import os
 import re
 import urllib.request
-from urllib.parse import quote
+
+from urllib.parse import quote, urlparse
+from html import escape
+
 
 OWNER = os.environ["GITHUB_OWNER"]
 CURRENT_REPO = os.environ["CURRENT_REPOSITORY"]
 TOKEN = os.environ["GITHUB_TOKEN"]
 
+
 API = "https://api.github.com"
+
 
 HEADERS = {
     "Accept": "application/vnd.github+json",
     "X-GitHub-Api-Version": "2022-11-28",
     "User-Agent": "Cinnamon-Desklets-Registry"
 }
+
 
 if TOKEN:
     HEADERS["Authorization"] = f"Bearer {TOKEN}"
@@ -93,11 +99,34 @@ def scan_desklets(repositories):
                 print(f"Skipping invalid manifest: {full_name}")
                 continue
 
+            screenshot = manifest.get("screenshot")
+
+            if isinstance(screenshot, str) and screenshot.strip():
+                screenshot = screenshot.strip()
+                parsed = urlparse(screenshot)
+
+                if parsed.scheme in ("http", "https") and parsed.netloc:
+                    screenshot_url = screenshot
+
+                elif not parsed.scheme:
+                    screenshot_url = (
+                        f"https://raw.githubusercontent.com/"
+                        f"{full_name}/{branch}/"
+                        f"{quote(screenshot.lstrip('/'), safe='/')}"
+                    )
+
+                else:
+                    screenshot_url = None
+
+            else:
+                screenshot_url = None
+
             desklets.append({
                 "name": name.strip(),
                 "version": version.strip(),
                 "description": description.strip(),
-                "url": repo["html_url"]
+                "url": repo["html_url"],
+                "screenshot": screenshot_url
             })
 
             print(f"Found desklet: {name} ({version})")
@@ -129,7 +158,7 @@ def generate_projects(desklets):
 
         description = re.sub(
             r"\s+", " ", desklet["description"]
-        ).replace("|", r"\|")
+        ).replace("|", r"**\|**")
 
         lines.extend([
             f"### [{name}]({url})",
@@ -139,6 +168,12 @@ def generate_projects(desklets):
             description,
             ""
         ])
+
+        if desklet.get("screenshot"):
+            lines.extend([
+                f'<img src="{escape(desklet["screenshot"], quote=True)}" width="300" alt="{escape(name, quote=True)} screenshot">',
+                ""
+            ])
 
     return intro, "\n".join(lines).strip()
 
@@ -150,7 +185,7 @@ def update_readme(intro, projects_content, desklet_count):
         readme = file.read()
 
     pattern = (
-        r"(## Projects\s*\n)"
+        r"(## Projects\s*\n*)"
         r".*?"
         r"(<!-- PROJECTS_LIST_START -->)"
         r".*?"
