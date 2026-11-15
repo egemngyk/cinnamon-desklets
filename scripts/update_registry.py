@@ -149,52 +149,33 @@ def update_readme(intro, projects_content, desklet_count):
     with open(readme_path, "r", encoding="utf-8") as file:
         readme = file.read()
 
-    # Update the Projects introduction.
-    intro_pattern = (
-        r"(## Projects\s*\n).*?"
-        r"(?=<!-- PROJECTS_LIST_START -->)"
+    pattern = (
+        r"(## Projects\s*\n)"
+        r".*?"
+        r"(<!-- PROJECTS_LIST_START -->)"
+        r".*?"
+        r"(<!-- PROJECTS_LIST_END -->)"
     )
 
-    updated_readme, intro_count = re.subn(
-        intro_pattern,
+    updated_readme, count = re.subn(
+        pattern,
         lambda match: (
             match.group(1)
             + (intro + "\n\n" if intro else "")
+            + match.group(2)
+            + "\n\n"
+            + projects_content
+            + "\n\n"
+            + match.group(3)
         ),
         readme,
         count=1,
         flags=re.DOTALL
     )
 
-    if intro_count != 1:
+    if count != 1:
         raise RuntimeError(
-            "Could not find the Projects section in README.md."
-        )
-
-    # Update the projects list.
-    projects_pattern = (
-        r"(<!-- PROJECTS_LIST_START -->)"
-        r".*?"
-        r"(<!-- PROJECTS_LIST_END -->)"
-    )
-
-    updated_readme, projects_count = re.subn(
-        projects_pattern,
-        lambda match: (
-            match.group(1)
-            + "\n\n"
-            + projects_content
-            + "\n\n"
-            + match.group(2)
-        ),
-        updated_readme,
-        count=1,
-        flags=re.DOTALL
-    )
-
-    if projects_count != 1:
-        raise RuntimeError(
-            "Could not find README project list markers."
+            "Could not find the Projects section and its markers."
         )
 
     if updated_readme == readme:

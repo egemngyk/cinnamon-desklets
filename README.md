@@ -3,7 +3,7 @@
 
 A collection of custom desklets built for the **Cinnamon Desktop Environment**.
 
-This organization brings together my Cinnamon desklet projects, focused on improving desktop productivity, customization, and everyday usability.
+This repository serves as a central hub for my Cinnamon desklet projects, bringing together tools designed to improve desktop productivity, customization, and everyday usability.
 
 ## Projects
 
@@ -18,7 +18,7 @@ No desklets have been published yet.
 - **Platform:** Cinnamon Desktop Environment
 - **Language:** JavaScript
 - **Focus:** Desktop customization and productivity
-- **Maintainer:** [@egemngyk](https://github.com/egemngyk)
+- **Developer:** [@egemngyk](https://github.com/egemngyk)
 
 ## Contributing
 
