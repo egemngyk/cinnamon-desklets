@@ -7,8 +7,6 @@ This organization brings together my Cinnamon desklet projects, focused on impro
 
 ## Projects
 
-Explore the repositories to discover available desklets, their features, installation instructions, and source code.
-
 <!-- PROJECTS_LIST_START -->
 
 No desklets have been published yet.
